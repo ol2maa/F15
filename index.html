@@ -199,14 +199,20 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.1s ease;
-            touch-action: manipulation;
+            touch-action: none;
             display: flex;
             align-items: center;
             justify-content: center;
             line-height: 1;
+            -webkit-touch-callout: none;
         }
         
         .ctrl-btn:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 1);
+        }
+        
+        .ctrl-btn.pressed {
             transform: scale(0.88);
             background: rgba(255, 255, 255, 1);
         }
@@ -222,6 +228,10 @@
         }
         
         .ctrl-btn.fire-btn:active {
+            background: linear-gradient(135deg, #cc0000, #ff3333);
+        }
+        
+        .ctrl-btn.fire-btn.pressed {
             background: linear-gradient(135deg, #cc0000, #ff3333);
         }
         
@@ -386,7 +396,7 @@
             const W = 500, H = 700;
             const BIRD_SIZE = 40;
             const ENEMY_SIZE = 50;
-            const BULLET_SIZE = 8;
+            const BULLET_SIZE = 14;  // أصبح أكبر
             const BULLET_SPEED = 12;
             const MAX_BULLETS = 30;
             const BULLETS_ADDED = 15;
@@ -409,13 +419,18 @@
             let gameOver = false;
             let gameOverReason = '';
             
+            // ===== متغيرات للأزرار =====
+            let activeDirections = {};
+            let firePressed = false;
+            let fireInterval = null;
+            let dirIntervals = {};
+            
             // ===== دوال الأعداء =====
             function createEnemies() {
                 enemies = [];
                 for (let i = 0; i < 3; i++) {
                     let x = 50 + Math.random() * 400;
                     let y = 50 + Math.random() * 400;
-                    // تجنب الظهور قريباً من الطائرة
                     while (Math.abs(x - birdX) < 100 && Math.abs(y - birdY) < 100) {
                         x = 50 + Math.random() * 400;
                         y = 50 + Math.random() * 400;
@@ -479,17 +494,30 @@
             
             function drawBullets() {
                 for (const b of bullets) {
+                    // توهج أبيض حول الرصاصة
+                    const gradient = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(0.5, '#ffffff');
+                    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, BULLET_SIZE, 0, 2 * Math.PI);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    // الرصاصة الأساسية بيضاء
                     ctx.beginPath();
                     ctx.arc(b.x, b.y, BULLET_SIZE/2, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#0088ff';
+                    ctx.fillStyle = '#ffffff';
                     ctx.fill();
+                    ctx.strokeStyle = 'rgba(200,200,255,0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
                 }
             }
             
             function draw() {
                 ctx.clearRect(0, 0, W, H);
                 
-                // خلفية
                 const grad = ctx.createLinearGradient(0, 0, 0, H);
                 grad.addColorStop(0, '#1a6fb5');
                 grad.addColorStop(1, '#4a9eff');
@@ -562,7 +590,6 @@
                         e.y = Math.max(0, Math.min(H - ENEMY_SIZE, e.y));
                     }
                     
-                    // اصطدام الطائرة بالعدو
                     if (birdX + BIRD_SIZE > e.x && birdX < e.x + ENEMY_SIZE &&
                         birdY + BIRD_SIZE > e.y && birdY < e.y + ENEMY_SIZE) {
                         gameOver = true;
@@ -572,14 +599,12 @@
                     }
                 }
                 
-                // التحقق من تدمير جميع الأعداء
                 const allDead = enemies.every(e => !e.alive);
                 if (allDead && enemies.length > 0) {
                     enemySpeedMultiplier += 0.3;
                     createEnemies();
                 }
                 
-                // اصطدام الطائرة بالحافة
                 if (birdX <= 0 || birdX >= W - BIRD_SIZE ||
                     birdY <= 0 || birdY >= H - BIRD_SIZE) {
                     gameOver = true;
@@ -588,7 +613,6 @@
                     return;
                 }
                 
-                // نفاذ الطلقات
                 if (bulletsRemaining <= 0) {
                     gameOver = true;
                     gameOverReason = '💀 No bullets left!';
@@ -607,6 +631,8 @@
                 reasonText.textContent = gameOverReason;
                 gameOverScreen.classList.add('show');
                 updateHUD();
+                // إيقاف جميع المؤقتات
+                clearAllIntervals();
             }
             
             // ===== إعادة اللعبة =====
@@ -658,7 +684,6 @@
             function handleDirection(newDirection) {
                 if (gameOver) return;
                 
-                // التحقق من المسافة بين الزوايا
                 let diff = newDirection - direction;
                 while (diff > Math.PI) diff -= 2 * Math.PI;
                 while (diff < -Math.PI) diff += 2 * Math.PI;
@@ -677,6 +702,20 @@
                 updateHUD();
             }
             
+            // ===== إيقاف جميع المؤقتات =====
+            function clearAllIntervals() {
+                if (fireInterval) {
+                    clearInterval(fireInterval);
+                    fireInterval = null;
+                }
+                for (const key in dirIntervals) {
+                    if (dirIntervals[key]) {
+                        clearInterval(dirIntervals[key]);
+                        delete dirIntervals[key];
+                    }
+                }
+            }
+            
             // ===== ربط الأزرار =====
             const dirMap = {
                 'up': -Math.PI/2,
@@ -689,31 +728,81 @@
                 'up-left': -3*Math.PI/4
             };
             
+            // أزرار الاتجاهات - اللمس المستمر
             document.querySelectorAll('[data-dir]').forEach(btn => {
-                btn.addEventListener('touchstart', (e) => {
+                const dir = btn.dataset.dir;
+                const angle = dirMap[dir];
+                
+                // بدء الضغط
+                const startPress = (e) => {
                     e.preventDefault();
-                    const dir = btn.dataset.dir;
-                    if (dirMap[dir] !== undefined) {
-                        handleDirection(dirMap[dir]);
+                    if (gameOver) return;
+                    btn.classList.add('pressed');
+                    handleDirection(angle);
+                    // استمرار الضغط يزيد السرعة
+                    if (!dirIntervals[dir]) {
+                        dirIntervals[dir] = setInterval(() => {
+                            if (!gameOver) {
+                                handleDirection(angle);
+                            }
+                        }, 150);
                     }
-                });
-                btn.addEventListener('mousedown', (e) => {
+                };
+                
+                // إنهاء الضغط
+                const endPress = (e) => {
                     e.preventDefault();
-                    const dir = btn.dataset.dir;
-                    if (dirMap[dir] !== undefined) {
-                        handleDirection(dirMap[dir]);
+                    btn.classList.remove('pressed');
+                    if (dirIntervals[dir]) {
+                        clearInterval(dirIntervals[dir]);
+                        delete dirIntervals[dir];
                     }
-                });
+                };
+                
+                btn.addEventListener('touchstart', startPress);
+                btn.addEventListener('touchend', endPress);
+                btn.addEventListener('touchcancel', endPress);
+                btn.addEventListener('mousedown', startPress);
+                btn.addEventListener('mouseup', endPress);
+                btn.addEventListener('mouseleave', endPress);
             });
             
-            document.getElementById('fireBtn').addEventListener('touchstart', (e) => {
+            // زر الإطلاق - الضغط المستمر
+            const fireBtn = document.getElementById('fireBtn');
+            
+            const startFire = (e) => {
                 e.preventDefault();
+                if (gameOver) return;
+                fireBtn.classList.add('pressed');
                 fireBullet();
-            });
-            document.getElementById('fireBtn').addEventListener('mousedown', (e) => {
+                if (!fireInterval) {
+                    fireInterval = setInterval(() => {
+                        if (!gameOver && bulletsRemaining > 0) {
+                            fireBullet();
+                        } else if (bulletsRemaining <= 0) {
+                            // إيقاف الإطلاق عند نفاذ الطلقات
+                            clearInterval(fireInterval);
+                            fireInterval = null;
+                        }
+                    }, 200);
+                }
+            };
+            
+            const endFire = (e) => {
                 e.preventDefault();
-                fireBullet();
-            });
+                fireBtn.classList.remove('pressed');
+                if (fireInterval) {
+                    clearInterval(fireInterval);
+                    fireInterval = null;
+                }
+            };
+            
+            fireBtn.addEventListener('touchstart', startFire);
+            fireBtn.addEventListener('touchend', endFire);
+            fireBtn.addEventListener('touchcancel', endFire);
+            fireBtn.addEventListener('mousedown', startFire);
+            fireBtn.addEventListener('mouseup', endFire);
+            fireBtn.addEventListener('mouseleave', endFire);
             
             // زر إعادة اللعبة
             restartBtn.addEventListener('click', restartGame);
@@ -724,7 +813,7 @@
             
             // ===== دورة اللعبة =====
             let lastTime = 0;
-            const interval = 1000 / 20; // 20 FPS
+            const interval = 1000 / 20;
             
             function gameLoop(timestamp) {
                 if (timestamp - lastTime >= interval) {
