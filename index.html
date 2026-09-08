@@ -371,7 +371,7 @@
             // ===== متغيرات اللعبة =====
             const W = 500, H = 700;
             const BIRD_SIZE = 40;
-            const ENEMY_SIZE = 50;
+            const ENEMY_SIZE = 45;
             const BULLET_SIZE = 14;
             const BULLET_RADIUS = BULLET_SIZE / 2;
             const BULLET_SPEED = 12;
@@ -424,46 +424,210 @@
                 updateHUD();
             }
             
+            // ===== رسم طائرة بيضاء (اللاعب) =====
+            function drawWhitePlane(x, y, angle) {
+                const cx = x + BIRD_SIZE/2;
+                const cy = y + BIRD_SIZE/2;
+                const size = 20;
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                
+                // جسم الطائرة (بيضاء)
+                ctx.shadowColor = 'rgba(255,255,255,0.3)';
+                ctx.shadowBlur = 10;
+                
+                // الهيكل الرئيسي - جسم الطائرة
+                ctx.beginPath();
+                ctx.moveTo(size * 1.5, 0); // مقدمة الطائرة
+                ctx.lineTo(0, -size * 0.4);
+                ctx.lineTo(-size * 1.2, -size * 0.2);
+                ctx.lineTo(-size * 1.4, 0);
+                ctx.lineTo(-size * 1.2, size * 0.2);
+                ctx.lineTo(0, size * 0.4);
+                ctx.closePath();
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // الأجنحة
+                ctx.shadowBlur = 5;
+                
+                // الجناح الأيمن
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, -size * 0.1);
+                ctx.lineTo(size * 0.8, -size * 0.9);
+                ctx.lineTo(size * 0.6, -size * 0.9);
+                ctx.lineTo(size * 0.1, -size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#f0f0ff';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الجناح الأيسر
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, size * 0.1);
+                ctx.lineTo(size * 0.8, size * 0.9);
+                ctx.lineTo(size * 0.6, size * 0.9);
+                ctx.lineTo(size * 0.1, size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#f0f0ff';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الذيل
+                ctx.beginPath();
+                ctx.moveTo(-size * 1.1, -size * 0.1);
+                ctx.lineTo(-size * 1.6, -size * 0.4);
+                ctx.lineTo(-size * 1.4, 0);
+                ctx.lineTo(-size * 1.6, size * 0.4);
+                ctx.lineTo(-size * 1.1, size * 0.1);
+                ctx.closePath();
+                ctx.fillStyle = '#e8e8f0';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // قمرة القيادة (زجاج)
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.ellipse(size * 0.3, 0, size * 0.3, size * 0.2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // تفاصيل إضافية - خطوط على الأجنحة
+                ctx.strokeStyle = 'rgba(200, 200, 220, 0.5)';
+                ctx.lineWidth = 0.5;
+                for (let i = -1; i <= 1; i+=2) {
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.3, i * size * 0.2);
+                    ctx.lineTo(size * 0.7, i * size * 0.7);
+                    ctx.stroke();
+                }
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+            
+            // ===== رسم طائرة سوداء (العدو) =====
+            function drawBlackPlane(x, y, angle) {
+                const cx = x + ENEMY_SIZE/2;
+                const cy = y + ENEMY_SIZE/2;
+                const size = 18;
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                
+                // ظل الطائرة
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 8;
+                
+                // جسم الطائرة (أسود)
+                ctx.beginPath();
+                ctx.moveTo(size * 1.3, 0);
+                ctx.lineTo(0, -size * 0.35);
+                ctx.lineTo(-size * 1.1, -size * 0.15);
+                ctx.lineTo(-size * 1.3, 0);
+                ctx.lineTo(-size * 1.1, size * 0.15);
+                ctx.lineTo(0, size * 0.35);
+                ctx.closePath();
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // الأجنحة
+                ctx.shadowBlur = 4;
+                
+                // الجناح الأيمن
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, -size * 0.1);
+                ctx.lineTo(size * 0.7, -size * 0.8);
+                ctx.lineTo(size * 0.5, -size * 0.8);
+                ctx.lineTo(size * 0.1, -size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#2a2a3e';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الجناح الأيسر
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, size * 0.1);
+                ctx.lineTo(size * 0.7, size * 0.8);
+                ctx.lineTo(size * 0.5, size * 0.8);
+                ctx.lineTo(size * 0.1, size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#2a2a3e';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الذيل
+                ctx.beginPath();
+                ctx.moveTo(-size * 1.0, -size * 0.1);
+                ctx.lineTo(-size * 1.5, -size * 0.35);
+                ctx.lineTo(-size * 1.3, 0);
+                ctx.lineTo(-size * 1.5, size * 0.35);
+                ctx.lineTo(-size * 1.0, size * 0.1);
+                ctx.closePath();
+                ctx.fillStyle = '#222233';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // قمرة القيادة (زجاج أحمر غامق)
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.ellipse(size * 0.25, 0, size * 0.25, size * 0.18, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(180, 0, 0, 0.5)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(180, 0, 0, 0.7)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // علامة حمراء على الذيل
+                ctx.beginPath();
+                ctx.moveTo(-size * 1.2, -size * 0.05);
+                ctx.lineTo(-size * 1.4, -size * 0.25);
+                ctx.lineTo(-size * 1.4, size * 0.25);
+                ctx.lineTo(-size * 1.2, size * 0.05);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(200, 0, 0, 0.6)';
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+            
             // ===== دوال الرسم =====
             function drawEnemies() {
                 for (const e of enemies) {
                     if (!e.alive) continue;
-                    ctx.fillStyle = '#7b2fbe';
-                    ctx.fillRect(e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
+                    // تحديد زاوية حركة العدو
+                    const enemyAngle = Math.atan2(e.vy, e.vx);
+                    drawBlackPlane(e.x, e.y, enemyAngle);
                 }
             }
             
             function drawBird() {
-                const cx = birdX + BIRD_SIZE/2;
-                const cy = birdY + BIRD_SIZE/2;
-                const r = 20;
-                const angle = direction;
-                
-                const p1x = cx + r * 1.5 * Math.cos(angle);
-                const p1y = cy + r * 1.5 * Math.sin(angle);
-                const p2x = cx - r * Math.cos(angle + Math.PI/3);
-                const p2y = cy - r * Math.sin(angle + Math.PI/3);
-                const p3x = cx - r * Math.cos(angle - Math.PI/3);
-                const p3y = cy - r * Math.sin(angle - Math.PI/3);
-                
-                ctx.beginPath();
-                ctx.moveTo(p1x, p1y);
-                ctx.lineTo(p2x, p2y);
-                ctx.lineTo(p3x, p3y);
-                ctx.closePath();
-                ctx.fillStyle = '#ffcc00';
-                ctx.fill();
-                ctx.strokeStyle = '#cc9900';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.arc(p1x, p1y, 5, 0, 2 * Math.PI);
-                ctx.fillStyle = '#ff0000';
-                ctx.fill();
+                drawWhitePlane(birdX, birdY, direction);
             }
             
             function drawBullets() {
@@ -503,18 +667,13 @@
                 drawBullets();
             }
             
-            // ===== كشف التصادم بين الرصاصة والمربع =====
+            // ===== كشف التصادم =====
             function checkBulletCollision(bullet, enemy) {
-                // أقرب نقطة في المربع إلى مركز الرصاصة
                 const closestX = Math.max(enemy.x, Math.min(bullet.x, enemy.x + ENEMY_SIZE));
                 const closestY = Math.max(enemy.y, Math.min(bullet.y, enemy.y + ENEMY_SIZE));
-                
-                // المسافة بين مركز الرصاصة وأقرب نقطة
                 const dx = bullet.x - closestX;
                 const dy = bullet.y - closestY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                // إذا كانت المسافة أقل من نصف قطر الرصاصة، فهناك تصادم
                 return distance < BULLET_RADIUS;
             }
             
@@ -539,7 +698,6 @@
                 birdX += speed * Math.cos(direction);
                 birdY += speed * Math.sin(direction);
                 
-                // تحريك الرصاص وكشف التصادم
                 const newBullets = [];
                 for (const b of bullets) {
                     b.x += b.vx;
@@ -548,7 +706,6 @@
                     let hit = false;
                     for (const e of enemies) {
                         if (!e.alive) continue;
-                        // استخدام دالة كشف التصادم المحسنة
                         if (checkBulletCollision(b, e)) {
                             e.alive = false;
                             score += 10;
@@ -563,7 +720,6 @@
                 }
                 bullets = newBullets;
                 
-                // تحديث الأعداء
                 for (const e of enemies) {
                     if (!e.alive) continue;
                     e.x += e.vx;
@@ -578,7 +734,6 @@
                         e.y = Math.max(0, Math.min(H - ENEMY_SIZE, e.y));
                     }
                     
-                    // كشف تصادم الطائرة مع العدو (مربع مع مربع)
                     if (birdX + BIRD_SIZE > e.x && birdX < e.x + ENEMY_SIZE &&
                         birdY + BIRD_SIZE > e.y && birdY < e.y + ENEMY_SIZE) {
                         gameOver = true;
@@ -588,14 +743,12 @@
                     }
                 }
                 
-                // التحقق من تدمير جميع الأعداء
                 const allDead = enemies.every(e => !e.alive);
                 if (allDead && enemies.length > 0) {
                     enemySpeedMultiplier += 0.3;
                     createEnemies();
                 }
                 
-                // اصطدام الطائرة بالحافة
                 if (birdX <= 0 || birdX >= W - BIRD_SIZE ||
                     birdY <= 0 || birdY >= H - BIRD_SIZE) {
                     gameOver = true;
