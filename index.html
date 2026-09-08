@@ -43,7 +43,6 @@
             cursor: none;
         }
         
-        /* HUD */
         #hud {
             position: absolute;
             top: 10px;
@@ -80,7 +79,6 @@
             margin-right: 3px;
         }
         
-        /* Game Over */
         #gameOverScreen {
             position: absolute;
             top: 0;
@@ -161,7 +159,6 @@
             border: 1px solid rgba(255, 0, 0, 0.3);
         }
         
-        /* أزرار التحكم */
         #controls {
             position: absolute;
             bottom: 30px;
@@ -314,7 +311,6 @@
     <div id="gameContainer">
         <canvas id="gameCanvas" width="500" height="700"></canvas>
         
-        <!-- HUD -->
         <div id="hud">
             <div class="hud-item score">🏆 <span id="scoreDisplay">0</span></div>
             <div class="hud-item bullets" id="bulletsDisplay">🔫 <span id="bulletsCount">30</span>/<span id="maxBullets">30</span></div>
@@ -322,7 +318,6 @@
             <div class="hud-item wave">🌊 <span id="waveDisplay">1</span></div>
         </div>
         
-        <!-- Game Over -->
         <div id="gameOverScreen">
             <div class="title">💥 GAME OVER</div>
             <div class="reason" id="reasonText">💀 No bullets left!</div>
@@ -331,7 +326,6 @@
             <button class="restart-btn" id="restartBtn">🔄 إعادة اللعبة</button>
         </div>
         
-        <!-- أزرار التحكم -->
         <div id="controls">
             <div class="ctrl-grid">
                 <button class="ctrl-btn" data-dir="up-left">↖</button>
@@ -349,11 +343,9 @@
 
     <script>
         (function() {
-            // ===== إعدادات اللعبة =====
             const canvas = document.getElementById('gameCanvas');
             const ctx = canvas.getContext('2d');
             
-            // عناصر HUD
             const scoreDisplay = document.getElementById('scoreDisplay');
             const bulletsCount = document.getElementById('bulletsCount');
             const maxBulletsDisplay = document.getElementById('maxBullets');
@@ -361,14 +353,12 @@
             const speedDisplay = document.getElementById('speedDisplay');
             const waveDisplay = document.getElementById('waveDisplay');
             
-            // عناصر Game Over
             const gameOverScreen = document.getElementById('gameOverScreen');
             const finalScore = document.getElementById('finalScore');
             const finalWave = document.getElementById('finalWave');
             const reasonText = document.getElementById('reasonText');
             const restartBtn = document.getElementById('restartBtn');
             
-            // ===== متغيرات اللعبة =====
             const W = 500, H = 700;
             const BIRD_SIZE = 40;
             const ENEMY_SIZE = 45;
@@ -396,11 +386,9 @@
             let gameOver = false;
             let gameOverReason = '';
             
-            // ===== متغيرات للأزرار =====
             let fireInterval = null;
             let dirIntervals = {};
             
-            // ===== دوال الأعداء =====
             function createEnemies() {
                 enemies = [];
                 for (let i = 0; i < 3; i++) {
@@ -424,7 +412,7 @@
                 updateHUD();
             }
             
-            // ===== رسم طائرة بيضاء (اللاعب) =====
+            // ===== طائرة بيضاء (اللاعب) - أجنحة مائلة للخلف =====
             function drawWhitePlane(x, y, angle) {
                 const cx = x + BIRD_SIZE/2;
                 const cy = y + BIRD_SIZE/2;
@@ -434,13 +422,12 @@
                 ctx.translate(cx, cy);
                 ctx.rotate(angle);
                 
-                // جسم الطائرة (بيضاء)
                 ctx.shadowColor = 'rgba(255,255,255,0.3)';
                 ctx.shadowBlur = 10;
                 
-                // الهيكل الرئيسي - جسم الطائرة
+                // جسم الطائرة
                 ctx.beginPath();
-                ctx.moveTo(size * 1.5, 0); // مقدمة الطائرة
+                ctx.moveTo(size * 1.5, 0);
                 ctx.lineTo(0, -size * 0.4);
                 ctx.lineTo(-size * 1.2, -size * 0.2);
                 ctx.lineTo(-size * 1.4, 0);
@@ -453,15 +440,15 @@
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
                 
-                // الأجنحة
+                // الأجنحة - مائلة للخلف (سويبت)
                 ctx.shadowBlur = 5;
                 
-                // الجناح الأيمن
+                // الجناح الأيمن (مائل للخلف)
                 ctx.beginPath();
-                ctx.moveTo(size * 0.2, -size * 0.1);
-                ctx.lineTo(size * 0.8, -size * 0.9);
-                ctx.lineTo(size * 0.6, -size * 0.9);
-                ctx.lineTo(size * 0.1, -size * 0.2);
+                ctx.moveTo(size * 0.1, -size * 0.1);
+                ctx.lineTo(-size * 0.3, -size * 0.9);
+                ctx.lineTo(-size * 0.5, -size * 0.85);
+                ctx.lineTo(-size * 0.1, -size * 0.05);
                 ctx.closePath();
                 ctx.fillStyle = '#f0f0ff';
                 ctx.fill();
@@ -469,12 +456,12 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // الجناح الأيسر
+                // الجناح الأيسر (مائل للخلف)
                 ctx.beginPath();
-                ctx.moveTo(size * 0.2, size * 0.1);
-                ctx.lineTo(size * 0.8, size * 0.9);
-                ctx.lineTo(size * 0.6, size * 0.9);
-                ctx.lineTo(size * 0.1, size * 0.2);
+                ctx.moveTo(size * 0.1, size * 0.1);
+                ctx.lineTo(-size * 0.3, size * 0.9);
+                ctx.lineTo(-size * 0.5, size * 0.85);
+                ctx.lineTo(-size * 0.1, size * 0.05);
                 ctx.closePath();
                 ctx.fillStyle = '#f0f0ff';
                 ctx.fill();
@@ -482,7 +469,7 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // الذيل
+                // الذيل الخلفي
                 ctx.beginPath();
                 ctx.moveTo(-size * 1.1, -size * 0.1);
                 ctx.lineTo(-size * 1.6, -size * 0.4);
@@ -496,7 +483,7 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // قمرة القيادة (زجاج)
+                // قمرة القيادة
                 ctx.shadowBlur = 0;
                 ctx.beginPath();
                 ctx.ellipse(size * 0.3, 0, size * 0.3, size * 0.2, 0, 0, Math.PI * 2);
@@ -506,13 +493,13 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // تفاصيل إضافية - خطوط على الأجنحة
+                // تفاصيل الأجنحة
                 ctx.strokeStyle = 'rgba(200, 200, 220, 0.5)';
                 ctx.lineWidth = 0.5;
                 for (let i = -1; i <= 1; i+=2) {
                     ctx.beginPath();
-                    ctx.moveTo(size * 0.3, i * size * 0.2);
-                    ctx.lineTo(size * 0.7, i * size * 0.7);
+                    ctx.moveTo(size * 0.1, i * size * 0.1);
+                    ctx.lineTo(-size * 0.2, i * size * 0.6);
                     ctx.stroke();
                 }
                 
@@ -520,7 +507,7 @@
                 ctx.restore();
             }
             
-            // ===== رسم طائرة سوداء (العدو) =====
+            // ===== طائرة سوداء (العدو) - أجنحة مائلة للخلف =====
             function drawBlackPlane(x, y, angle) {
                 const cx = x + ENEMY_SIZE/2;
                 const cy = y + ENEMY_SIZE/2;
@@ -530,11 +517,10 @@
                 ctx.translate(cx, cy);
                 ctx.rotate(angle);
                 
-                // ظل الطائرة
                 ctx.shadowColor = 'rgba(0,0,0,0.3)';
                 ctx.shadowBlur = 8;
                 
-                // جسم الطائرة (أسود)
+                // جسم الطائرة
                 ctx.beginPath();
                 ctx.moveTo(size * 1.3, 0);
                 ctx.lineTo(0, -size * 0.35);
@@ -549,15 +535,15 @@
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
                 
-                // الأجنحة
+                // الأجنحة - مائلة للخلف
                 ctx.shadowBlur = 4;
                 
-                // الجناح الأيمن
+                // الجناح الأيمن (مائل للخلف)
                 ctx.beginPath();
-                ctx.moveTo(size * 0.2, -size * 0.1);
-                ctx.lineTo(size * 0.7, -size * 0.8);
-                ctx.lineTo(size * 0.5, -size * 0.8);
-                ctx.lineTo(size * 0.1, -size * 0.2);
+                ctx.moveTo(size * 0.1, -size * 0.1);
+                ctx.lineTo(-size * 0.25, -size * 0.8);
+                ctx.lineTo(-size * 0.45, -size * 0.75);
+                ctx.lineTo(-size * 0.1, -size * 0.05);
                 ctx.closePath();
                 ctx.fillStyle = '#2a2a3e';
                 ctx.fill();
@@ -565,12 +551,12 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // الجناح الأيسر
+                // الجناح الأيسر (مائل للخلف)
                 ctx.beginPath();
-                ctx.moveTo(size * 0.2, size * 0.1);
-                ctx.lineTo(size * 0.7, size * 0.8);
-                ctx.lineTo(size * 0.5, size * 0.8);
-                ctx.lineTo(size * 0.1, size * 0.2);
+                ctx.moveTo(size * 0.1, size * 0.1);
+                ctx.lineTo(-size * 0.25, size * 0.8);
+                ctx.lineTo(-size * 0.45, size * 0.75);
+                ctx.lineTo(-size * 0.1, size * 0.05);
                 ctx.closePath();
                 ctx.fillStyle = '#2a2a3e';
                 ctx.fill();
@@ -578,7 +564,7 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // الذيل
+                // الذيل الخلفي
                 ctx.beginPath();
                 ctx.moveTo(-size * 1.0, -size * 0.1);
                 ctx.lineTo(-size * 1.5, -size * 0.35);
@@ -592,7 +578,7 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // قمرة القيادة (زجاج أحمر غامق)
+                // قمرة القيادة
                 ctx.shadowBlur = 0;
                 ctx.beginPath();
                 ctx.ellipse(size * 0.25, 0, size * 0.25, size * 0.18, 0, 0, Math.PI * 2);
@@ -616,11 +602,9 @@
                 ctx.restore();
             }
             
-            // ===== دوال الرسم =====
             function drawEnemies() {
                 for (const e of enemies) {
                     if (!e.alive) continue;
-                    // تحديد زاوية حركة العدو
                     const enemyAngle = Math.atan2(e.vy, e.vx);
                     drawBlackPlane(e.x, e.y, enemyAngle);
                 }
@@ -632,7 +616,6 @@
             
             function drawBullets() {
                 for (const b of bullets) {
-                    // توهج
                     const gradient = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
                     gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
                     gradient.addColorStop(0.5, 'rgba(255,255,255,0.4)');
@@ -642,7 +625,6 @@
                     ctx.fillStyle = gradient;
                     ctx.fill();
                     
-                    // الرصاصة الأساسية
                     ctx.beginPath();
                     ctx.arc(b.x, b.y, BULLET_RADIUS, 0, 2 * Math.PI);
                     ctx.fillStyle = '#ffffff';
@@ -667,7 +649,6 @@
                 drawBullets();
             }
             
-            // ===== كشف التصادم =====
             function checkBulletCollision(bullet, enemy) {
                 const closestX = Math.max(enemy.x, Math.min(bullet.x, enemy.x + ENEMY_SIZE));
                 const closestY = Math.max(enemy.y, Math.min(bullet.y, enemy.y + ENEMY_SIZE));
@@ -677,7 +658,6 @@
                 return distance < BULLET_RADIUS;
             }
             
-            // ===== تحديث HUD =====
             function updateHUD() {
                 scoreDisplay.textContent = score;
                 bulletsCount.textContent = bulletsRemaining;
@@ -691,7 +671,6 @@
                 waveDisplay.textContent = enemiesSpawned || 1;
             }
             
-            // ===== تحديث اللعبة =====
             function update() {
                 if (gameOver) return;
                 
@@ -768,7 +747,6 @@
                 draw();
             }
             
-            // ===== عرض شاشة Game Over =====
             function showGameOver() {
                 finalScore.textContent = score;
                 finalWave.textContent = enemiesSpawned || 1;
@@ -778,7 +756,6 @@
                 clearAllIntervals();
             }
             
-            // ===== إعادة اللعبة =====
             function restartGame() {
                 gameOver = false;
                 gameOverReason = '';
@@ -803,7 +780,6 @@
                 draw();
             }
             
-            // ===== إطلاق رصاصة =====
             function fireBullet() {
                 if (gameOver) return;
                 if (bulletsRemaining <= 0) return;
@@ -823,7 +799,6 @@
                 updateHUD();
             }
             
-            // ===== التحكم في الاتجاه =====
             function handleDirection(newDirection) {
                 if (gameOver) return;
                 
@@ -845,7 +820,6 @@
                 updateHUD();
             }
             
-            // ===== إيقاف جميع المؤقتات =====
             function clearAllIntervals() {
                 if (fireInterval) {
                     clearInterval(fireInterval);
@@ -859,7 +833,6 @@
                 }
             }
             
-            // ===== ربط الأزرار =====
             const dirMap = {
                 'up': -Math.PI/2,
                 'up-right': -Math.PI/4,
@@ -906,7 +879,6 @@
                 btn.addEventListener('mouseleave', endPress);
             });
             
-            // زر الإطلاق
             const fireBtn = document.getElementById('fireBtn');
             
             const startFire = (e) => {
@@ -948,7 +920,6 @@
                 restartGame();
             });
             
-            // ===== دورة اللعبة =====
             let lastTime = 0;
             const interval = 1000 / 20;
             
@@ -960,7 +931,6 @@
                 requestAnimationFrame(gameLoop);
             }
             
-            // ===== بدء اللعبة =====
             createEnemies();
             updateHUD();
             draw();
