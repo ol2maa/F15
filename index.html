@@ -43,7 +43,7 @@
             cursor: none;
         }
         
-        /* HUD - الإحصائيات */
+        /* HUD */
         #hud {
             position: absolute;
             top: 10px;
@@ -80,7 +80,7 @@
             margin-right: 3px;
         }
         
-        /* شاشة Game Over */
+        /* Game Over */
         #gameOverScreen {
             position: absolute;
             top: 0;
@@ -113,13 +113,6 @@
             text-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
             margin-bottom: 10px;
             letter-spacing: 2px;
-        }
-        
-        #gameOverScreen .subtitle {
-            font-size: 20px;
-            color: #fff;
-            margin-bottom: 5px;
-            opacity: 0.8;
         }
         
         #gameOverScreen .final-score {
@@ -158,10 +151,6 @@
             transform: scale(0.95);
         }
         
-        #gameOverScreen .restart-btn .icon {
-            margin-right: 10px;
-        }
-        
         #gameOverScreen .reason {
             font-size: 16px;
             color: #ff6b6b;
@@ -172,7 +161,7 @@
             border: 1px solid rgba(255, 0, 0, 0.3);
         }
         
-        /* دليل الأزرار في الأسفل */
+        /* أزرار التحكم */
         #controls {
             position: absolute;
             bottom: 30px;
@@ -250,48 +239,40 @@
             font-size: 18px;
         }
         
-        /* استجابة للشاشات الصغيرة */
         @media (max-width: 520px) {
             #gameContainer {
                 width: 100vw;
                 height: 100vh;
                 border-radius: 0;
             }
-            
             .ctrl-btn {
                 width: 42px;
                 height: 42px;
                 font-size: 18px;
             }
-            
             .ctrl-btn.fire-btn {
                 width: 54px;
                 height: 54px;
                 font-size: 24px;
             }
-            
             .ctrl-grid {
                 grid-template-columns: repeat(3, 42px);
                 grid-template-rows: repeat(3, 42px);
                 gap: 3px;
             }
-            
             .ctrl-grid .ctrl-btn {
                 width: 42px;
                 height: 42px;
                 font-size: 16px;
             }
-            
             #hud {
                 font-size: 12px;
                 height: 35px;
                 padding: 0 6px;
             }
-            
             #hud .hud-item {
                 font-size: 11px;
             }
-            
             #gameOverScreen .title {
                 font-size: 36px;
             }
@@ -303,31 +284,26 @@
                 height: 36px;
                 font-size: 14px;
             }
-            
             .ctrl-btn.fire-btn {
                 width: 46px;
                 height: 46px;
                 font-size: 20px;
             }
-            
             .ctrl-grid {
                 grid-template-columns: repeat(3, 36px);
                 grid-template-rows: repeat(3, 36px);
                 gap: 2px;
             }
-            
             .ctrl-grid .ctrl-btn {
                 width: 36px;
                 height: 36px;
                 font-size: 14px;
             }
-            
             #hud {
                 font-size: 10px;
                 height: 30px;
                 padding: 0 4px;
             }
-            
             #hud .hud-item {
                 font-size: 9px;
             }
@@ -346,7 +322,7 @@
             <div class="hud-item wave">🌊 <span id="waveDisplay">1</span></div>
         </div>
         
-        <!-- Game Over Screen -->
+        <!-- Game Over -->
         <div id="gameOverScreen">
             <div class="title">💥 GAME OVER</div>
             <div class="reason" id="reasonText">💀 No bullets left!</div>
@@ -396,13 +372,14 @@
             const W = 500, H = 700;
             const BIRD_SIZE = 40;
             const ENEMY_SIZE = 50;
-            const BULLET_SIZE = 14;  // أصبح أكبر
+            const BULLET_SIZE = 14;
+            const BULLET_RADIUS = BULLET_SIZE / 2;
             const BULLET_SPEED = 12;
             const MAX_BULLETS = 30;
             const BULLETS_ADDED = 15;
             
             let birdX = 200, birdY = 300;
-            let direction = 0; // راديان
+            let direction = 0;
             let speed = 0;
             const BASE_SPEED = 2;
             const MAX_SPEED = 10;
@@ -420,8 +397,6 @@
             let gameOverReason = '';
             
             // ===== متغيرات للأزرار =====
-            let activeDirections = {};
-            let firePressed = false;
             let fireInterval = null;
             let dirIntervals = {};
             
@@ -485,7 +460,6 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // الأنف
                 ctx.beginPath();
                 ctx.arc(p1x, p1y, 5, 0, 2 * Math.PI);
                 ctx.fillStyle = '#ff0000';
@@ -494,23 +468,23 @@
             
             function drawBullets() {
                 for (const b of bullets) {
-                    // توهج أبيض حول الرصاصة
+                    // توهج
                     const gradient = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
-                    gradient.addColorStop(0, '#ffffff');
-                    gradient.addColorStop(0.5, '#ffffff');
+                    gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
+                    gradient.addColorStop(0.5, 'rgba(255,255,255,0.4)');
                     gradient.addColorStop(1, 'rgba(255,255,255,0)');
                     ctx.beginPath();
                     ctx.arc(b.x, b.y, BULLET_SIZE, 0, 2 * Math.PI);
                     ctx.fillStyle = gradient;
                     ctx.fill();
                     
-                    // الرصاصة الأساسية بيضاء
+                    // الرصاصة الأساسية
                     ctx.beginPath();
-                    ctx.arc(b.x, b.y, BULLET_SIZE/2, 0, 2 * Math.PI);
+                    ctx.arc(b.x, b.y, BULLET_RADIUS, 0, 2 * Math.PI);
                     ctx.fillStyle = '#ffffff';
                     ctx.fill();
-                    ctx.strokeStyle = 'rgba(200,200,255,0.5)';
-                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = 'rgba(200,200,255,0.3)';
+                    ctx.lineWidth = 1;
                     ctx.stroke();
                 }
             }
@@ -527,6 +501,21 @@
                 drawEnemies();
                 drawBird();
                 drawBullets();
+            }
+            
+            // ===== كشف التصادم بين الرصاصة والمربع =====
+            function checkBulletCollision(bullet, enemy) {
+                // أقرب نقطة في المربع إلى مركز الرصاصة
+                const closestX = Math.max(enemy.x, Math.min(bullet.x, enemy.x + ENEMY_SIZE));
+                const closestY = Math.max(enemy.y, Math.min(bullet.y, enemy.y + ENEMY_SIZE));
+                
+                // المسافة بين مركز الرصاصة وأقرب نقطة
+                const dx = bullet.x - closestX;
+                const dy = bullet.y - closestY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // إذا كانت المسافة أقل من نصف قطر الرصاصة، فهناك تصادم
+                return distance < BULLET_RADIUS;
             }
             
             // ===== تحديث HUD =====
@@ -547,11 +536,10 @@
             function update() {
                 if (gameOver) return;
                 
-                // تحريك الطائرة
                 birdX += speed * Math.cos(direction);
                 birdY += speed * Math.sin(direction);
                 
-                // تحريك الرصاص
+                // تحريك الرصاص وكشف التصادم
                 const newBullets = [];
                 for (const b of bullets) {
                     b.x += b.vx;
@@ -560,8 +548,8 @@
                     let hit = false;
                     for (const e of enemies) {
                         if (!e.alive) continue;
-                        if (b.x >= e.x && b.x <= e.x + ENEMY_SIZE &&
-                            b.y >= e.y && b.y <= e.y + ENEMY_SIZE) {
+                        // استخدام دالة كشف التصادم المحسنة
+                        if (checkBulletCollision(b, e)) {
                             e.alive = false;
                             score += 10;
                             hit = true;
@@ -590,6 +578,7 @@
                         e.y = Math.max(0, Math.min(H - ENEMY_SIZE, e.y));
                     }
                     
+                    // كشف تصادم الطائرة مع العدو (مربع مع مربع)
                     if (birdX + BIRD_SIZE > e.x && birdX < e.x + ENEMY_SIZE &&
                         birdY + BIRD_SIZE > e.y && birdY < e.y + ENEMY_SIZE) {
                         gameOver = true;
@@ -599,12 +588,14 @@
                     }
                 }
                 
+                // التحقق من تدمير جميع الأعداء
                 const allDead = enemies.every(e => !e.alive);
                 if (allDead && enemies.length > 0) {
                     enemySpeedMultiplier += 0.3;
                     createEnemies();
                 }
                 
+                // اصطدام الطائرة بالحافة
                 if (birdX <= 0 || birdX >= W - BIRD_SIZE ||
                     birdY <= 0 || birdY >= H - BIRD_SIZE) {
                     gameOver = true;
@@ -631,7 +622,6 @@
                 reasonText.textContent = gameOverReason;
                 gameOverScreen.classList.add('show');
                 updateHUD();
-                // إيقاف جميع المؤقتات
                 clearAllIntervals();
             }
             
@@ -728,18 +718,15 @@
                 'up-left': -3*Math.PI/4
             };
             
-            // أزرار الاتجاهات - اللمس المستمر
             document.querySelectorAll('[data-dir]').forEach(btn => {
                 const dir = btn.dataset.dir;
                 const angle = dirMap[dir];
                 
-                // بدء الضغط
                 const startPress = (e) => {
                     e.preventDefault();
                     if (gameOver) return;
                     btn.classList.add('pressed');
                     handleDirection(angle);
-                    // استمرار الضغط يزيد السرعة
                     if (!dirIntervals[dir]) {
                         dirIntervals[dir] = setInterval(() => {
                             if (!gameOver) {
@@ -749,7 +736,6 @@
                     }
                 };
                 
-                // إنهاء الضغط
                 const endPress = (e) => {
                     e.preventDefault();
                     btn.classList.remove('pressed');
@@ -767,7 +753,7 @@
                 btn.addEventListener('mouseleave', endPress);
             });
             
-            // زر الإطلاق - الضغط المستمر
+            // زر الإطلاق
             const fireBtn = document.getElementById('fireBtn');
             
             const startFire = (e) => {
@@ -780,7 +766,6 @@
                         if (!gameOver && bulletsRemaining > 0) {
                             fireBullet();
                         } else if (bulletsRemaining <= 0) {
-                            // إيقاف الإطلاق عند نفاذ الطلقات
                             clearInterval(fireInterval);
                             fireInterval = null;
                         }
@@ -804,7 +789,6 @@
             fireBtn.addEventListener('mouseup', endFire);
             fireBtn.addEventListener('mouseleave', endFire);
             
-            // زر إعادة اللعبة
             restartBtn.addEventListener('click', restartGame);
             restartBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -829,7 +813,6 @@
             draw();
             requestAnimationFrame(gameLoop);
             
-            // ===== منع التمرير =====
             document.addEventListener('touchmove', (e) => {
                 if (e.target.closest('#gameContainer')) {
                     e.preventDefault();
