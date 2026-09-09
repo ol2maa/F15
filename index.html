@@ -43,7 +43,7 @@
             cursor: none;
         }
         
-        /* HUD - الإحصائيات */
+        /* HUD */
         #hud {
             position: absolute;
             top: 10px;
@@ -80,7 +80,7 @@
             margin-right: 3px;
         }
         
-        /* شاشة Game Over */
+        /* Game Over */
         #gameOverScreen {
             position: absolute;
             top: 0;
@@ -113,13 +113,6 @@
             text-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
             margin-bottom: 10px;
             letter-spacing: 2px;
-        }
-        
-        #gameOverScreen .subtitle {
-            font-size: 20px;
-            color: #fff;
-            margin-bottom: 5px;
-            opacity: 0.8;
         }
         
         #gameOverScreen .final-score {
@@ -158,10 +151,6 @@
             transform: scale(0.95);
         }
         
-        #gameOverScreen .restart-btn .icon {
-            margin-right: 10px;
-        }
-        
         #gameOverScreen .reason {
             font-size: 16px;
             color: #ff6b6b;
@@ -172,7 +161,7 @@
             border: 1px solid rgba(255, 0, 0, 0.3);
         }
         
-        /* دليل الأزرار في الأسفل */
+        /* أزرار التحكم */
         #controls {
             position: absolute;
             bottom: 30px;
@@ -250,48 +239,40 @@
             font-size: 18px;
         }
         
-        /* استجابة للشاشات الصغيرة */
         @media (max-width: 520px) {
             #gameContainer {
                 width: 100vw;
                 height: 100vh;
                 border-radius: 0;
             }
-            
             .ctrl-btn {
                 width: 42px;
                 height: 42px;
                 font-size: 18px;
             }
-            
             .ctrl-btn.fire-btn {
                 width: 54px;
                 height: 54px;
                 font-size: 24px;
             }
-            
             .ctrl-grid {
                 grid-template-columns: repeat(3, 42px);
                 grid-template-rows: repeat(3, 42px);
                 gap: 3px;
             }
-            
             .ctrl-grid .ctrl-btn {
                 width: 42px;
                 height: 42px;
                 font-size: 16px;
             }
-            
             #hud {
                 font-size: 12px;
                 height: 35px;
                 padding: 0 6px;
             }
-            
             #hud .hud-item {
                 font-size: 11px;
             }
-            
             #gameOverScreen .title {
                 font-size: 36px;
             }
@@ -303,31 +284,26 @@
                 height: 36px;
                 font-size: 14px;
             }
-            
             .ctrl-btn.fire-btn {
                 width: 46px;
                 height: 46px;
                 font-size: 20px;
             }
-            
             .ctrl-grid {
                 grid-template-columns: repeat(3, 36px);
                 grid-template-rows: repeat(3, 36px);
                 gap: 2px;
             }
-            
             .ctrl-grid .ctrl-btn {
                 width: 36px;
                 height: 36px;
                 font-size: 14px;
             }
-            
             #hud {
                 font-size: 10px;
                 height: 30px;
                 padding: 0 4px;
             }
-            
             #hud .hud-item {
                 font-size: 9px;
             }
@@ -346,7 +322,7 @@
             <div class="hud-item wave">🌊 <span id="waveDisplay">1</span></div>
         </div>
         
-        <!-- Game Over Screen -->
+        <!-- Game Over -->
         <div id="gameOverScreen">
             <div class="title">💥 GAME OVER</div>
             <div class="reason" id="reasonText">💀 No bullets left!</div>
@@ -395,14 +371,15 @@
             // ===== متغيرات اللعبة =====
             const W = 500, H = 700;
             const BIRD_SIZE = 40;
-            const ENEMY_SIZE = 50;
-            const BULLET_SIZE = 14;  // أصبح أكبر
+            const ENEMY_SIZE = 45;
+            const BULLET_SIZE = 14;
+            const BULLET_RADIUS = BULLET_SIZE / 2;
             const BULLET_SPEED = 12;
             const MAX_BULLETS = 30;
             const BULLETS_ADDED = 15;
             
             let birdX = 200, birdY = 300;
-            let direction = 0; // راديان
+            let direction = 0;
             let speed = 0;
             const BASE_SPEED = 2;
             const MAX_SPEED = 10;
@@ -420,8 +397,6 @@
             let gameOverReason = '';
             
             // ===== متغيرات للأزرار =====
-            let activeDirections = {};
-            let firePressed = false;
             let fireInterval = null;
             let dirIntervals = {};
             
@@ -449,68 +424,231 @@
                 updateHUD();
             }
             
+            // ===== رسم طائرة بيضاء (اللاعب) =====
+            function drawWhitePlane(x, y, angle) {
+                const cx = x + BIRD_SIZE/2;
+                const cy = y + BIRD_SIZE/2;
+                const size = 20;
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                
+                // جسم الطائرة (بيضاء)
+                ctx.shadowColor = 'rgba(255,255,255,0.3)';
+                ctx.shadowBlur = 10;
+                
+                // الهيكل الرئيسي - جسم الطائرة
+                ctx.beginPath();
+                ctx.moveTo(size * 1.5, 0); // مقدمة الطائرة
+                ctx.lineTo(0, -size * 0.4);
+                ctx.lineTo(-size * 1.2, -size * 0.2);
+                ctx.lineTo(-size * 1.4, 0);
+                ctx.lineTo(-size * 1.2, size * 0.2);
+                ctx.lineTo(0, size * 0.4);
+                ctx.closePath();
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // الأجنحة
+                ctx.shadowBlur = 5;
+                
+                // الجناح الأيمن
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, -size * 0.1);
+                ctx.lineTo(size * 0.8, -size * 0.9);
+                ctx.lineTo(size * 0.6, -size * 0.9);
+                ctx.lineTo(size * 0.1, -size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#f0f0ff';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الجناح الأيسر
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, size * 0.1);
+                ctx.lineTo(size * 0.8, size * 0.9);
+                ctx.lineTo(size * 0.6, size * 0.9);
+                ctx.lineTo(size * 0.1, size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#f0f0ff';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الذيل
+                ctx.beginPath();
+                ctx.moveTo(-size * 1.1, -size * 0.1);
+                ctx.lineTo(-size * 1.6, -size * 0.4);
+                ctx.lineTo(-size * 1.4, 0);
+                ctx.lineTo(-size * 1.6, size * 0.4);
+                ctx.lineTo(-size * 1.1, size * 0.1);
+                ctx.closePath();
+                ctx.fillStyle = '#e8e8f0';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // قمرة القيادة (زجاج)
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.ellipse(size * 0.3, 0, size * 0.3, size * 0.2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // تفاصيل إضافية - خطوط على الأجنحة
+                ctx.strokeStyle = 'rgba(200, 200, 220, 0.5)';
+                ctx.lineWidth = 0.5;
+                for (let i = -1; i <= 1; i+=2) {
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.3, i * size * 0.2);
+                    ctx.lineTo(size * 0.7, i * size * 0.7);
+                    ctx.stroke();
+                }
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+            
+            // ===== رسم طائرة سوداء (العدو) =====
+            function drawBlackPlane(x, y, angle) {
+                const cx = x + ENEMY_SIZE/2;
+                const cy = y + ENEMY_SIZE/2;
+                const size = 18;
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                
+                // ظل الطائرة
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 8;
+                
+                // جسم الطائرة (أسود)
+                ctx.beginPath();
+                ctx.moveTo(size * 1.3, 0);
+                ctx.lineTo(0, -size * 0.35);
+                ctx.lineTo(-size * 1.1, -size * 0.15);
+                ctx.lineTo(-size * 1.3, 0);
+                ctx.lineTo(-size * 1.1, size * 0.15);
+                ctx.lineTo(0, size * 0.35);
+                ctx.closePath();
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // الأجنحة
+                ctx.shadowBlur = 4;
+                
+                // الجناح الأيمن
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, -size * 0.1);
+                ctx.lineTo(size * 0.7, -size * 0.8);
+                ctx.lineTo(size * 0.5, -size * 0.8);
+                ctx.lineTo(size * 0.1, -size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#2a2a3e';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الجناح الأيسر
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, size * 0.1);
+                ctx.lineTo(size * 0.7, size * 0.8);
+                ctx.lineTo(size * 0.5, size * 0.8);
+                ctx.lineTo(size * 0.1, size * 0.2);
+                ctx.closePath();
+                ctx.fillStyle = '#2a2a3e';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // الذيل
+                ctx.beginPath();
+                ctx.moveTo(-size * 1.0, -size * 0.1);
+                ctx.lineTo(-size * 1.5, -size * 0.35);
+                ctx.lineTo(-size * 1.3, 0);
+                ctx.lineTo(-size * 1.5, size * 0.35);
+                ctx.lineTo(-size * 1.0, size * 0.1);
+                ctx.closePath();
+                ctx.fillStyle = '#222233';
+                ctx.fill();
+                ctx.strokeStyle = '#333344';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // قمرة القيادة (زجاج أحمر غامق)
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.ellipse(size * 0.25, 0, size * 0.25, size * 0.18, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(180, 0, 0, 0.5)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(180, 0, 0, 0.7)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // علامة حمراء على الذيل
+                ctx.beginPath();
+                ctx.moveTo(-size * 1.2, -size * 0.05);
+                ctx.lineTo(-size * 1.4, -size * 0.25);
+                ctx.lineTo(-size * 1.4, size * 0.25);
+                ctx.lineTo(-size * 1.2, size * 0.05);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(200, 0, 0, 0.6)';
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+            
             // ===== دوال الرسم =====
             function drawEnemies() {
                 for (const e of enemies) {
                     if (!e.alive) continue;
-                    ctx.fillStyle = '#7b2fbe';
-                    ctx.fillRect(e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
+                    // تحديد زاوية حركة العدو
+                    const enemyAngle = Math.atan2(e.vy, e.vx);
+                    drawBlackPlane(e.x, e.y, enemyAngle);
                 }
             }
             
             function drawBird() {
-                const cx = birdX + BIRD_SIZE/2;
-                const cy = birdY + BIRD_SIZE/2;
-                const r = 20;
-                const angle = direction;
-                
-                const p1x = cx + r * 1.5 * Math.cos(angle);
-                const p1y = cy + r * 1.5 * Math.sin(angle);
-                const p2x = cx - r * Math.cos(angle + Math.PI/3);
-                const p2y = cy - r * Math.sin(angle + Math.PI/3);
-                const p3x = cx - r * Math.cos(angle - Math.PI/3);
-                const p3y = cy - r * Math.sin(angle - Math.PI/3);
-                
-                ctx.beginPath();
-                ctx.moveTo(p1x, p1y);
-                ctx.lineTo(p2x, p2y);
-                ctx.lineTo(p3x, p3y);
-                ctx.closePath();
-                ctx.fillStyle = '#ffcc00';
-                ctx.fill();
-                ctx.strokeStyle = '#cc9900';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // الأنف
-                ctx.beginPath();
-                ctx.arc(p1x, p1y, 5, 0, 2 * Math.PI);
-                ctx.fillStyle = '#ff0000';
-                ctx.fill();
+                drawWhitePlane(birdX, birdY, direction);
             }
             
             function drawBullets() {
                 for (const b of bullets) {
-                    // توهج أبيض حول الرصاصة
+                    // توهج
                     const gradient = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
-                    gradient.addColorStop(0, '#ffffff');
-                    gradient.addColorStop(0.5, '#ffffff');
+                    gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
+                    gradient.addColorStop(0.5, 'rgba(255,255,255,0.4)');
                     gradient.addColorStop(1, 'rgba(255,255,255,0)');
                     ctx.beginPath();
                     ctx.arc(b.x, b.y, BULLET_SIZE, 0, 2 * Math.PI);
                     ctx.fillStyle = gradient;
                     ctx.fill();
                     
-                    // الرصاصة الأساسية بيضاء
+                    // الرصاصة الأساسية
                     ctx.beginPath();
-                    ctx.arc(b.x, b.y, BULLET_SIZE/2, 0, 2 * Math.PI);
+                    ctx.arc(b.x, b.y, BULLET_RADIUS, 0, 2 * Math.PI);
                     ctx.fillStyle = '#ffffff';
                     ctx.fill();
-                    ctx.strokeStyle = 'rgba(200,200,255,0.5)';
-                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = 'rgba(200,200,255,0.3)';
+                    ctx.lineWidth = 1;
                     ctx.stroke();
                 }
             }
@@ -527,6 +665,16 @@
                 drawEnemies();
                 drawBird();
                 drawBullets();
+            }
+            
+            // ===== كشف التصادم =====
+            function checkBulletCollision(bullet, enemy) {
+                const closestX = Math.max(enemy.x, Math.min(bullet.x, enemy.x + ENEMY_SIZE));
+                const closestY = Math.max(enemy.y, Math.min(bullet.y, enemy.y + ENEMY_SIZE));
+                const dx = bullet.x - closestX;
+                const dy = bullet.y - closestY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                return distance < BULLET_RADIUS;
             }
             
             // ===== تحديث HUD =====
@@ -547,11 +695,9 @@
             function update() {
                 if (gameOver) return;
                 
-                // تحريك الطائرة
                 birdX += speed * Math.cos(direction);
                 birdY += speed * Math.sin(direction);
                 
-                // تحريك الرصاص
                 const newBullets = [];
                 for (const b of bullets) {
                     b.x += b.vx;
@@ -560,8 +706,7 @@
                     let hit = false;
                     for (const e of enemies) {
                         if (!e.alive) continue;
-                        if (b.x >= e.x && b.x <= e.x + ENEMY_SIZE &&
-                            b.y >= e.y && b.y <= e.y + ENEMY_SIZE) {
+                        if (checkBulletCollision(b, e)) {
                             e.alive = false;
                             score += 10;
                             hit = true;
@@ -575,7 +720,6 @@
                 }
                 bullets = newBullets;
                 
-                // تحديث الأعداء
                 for (const e of enemies) {
                     if (!e.alive) continue;
                     e.x += e.vx;
@@ -631,7 +775,6 @@
                 reasonText.textContent = gameOverReason;
                 gameOverScreen.classList.add('show');
                 updateHUD();
-                // إيقاف جميع المؤقتات
                 clearAllIntervals();
             }
             
@@ -728,18 +871,15 @@
                 'up-left': -3*Math.PI/4
             };
             
-            // أزرار الاتجاهات - اللمس المستمر
             document.querySelectorAll('[data-dir]').forEach(btn => {
                 const dir = btn.dataset.dir;
                 const angle = dirMap[dir];
                 
-                // بدء الضغط
                 const startPress = (e) => {
                     e.preventDefault();
                     if (gameOver) return;
                     btn.classList.add('pressed');
                     handleDirection(angle);
-                    // استمرار الضغط يزيد السرعة
                     if (!dirIntervals[dir]) {
                         dirIntervals[dir] = setInterval(() => {
                             if (!gameOver) {
@@ -749,7 +889,6 @@
                     }
                 };
                 
-                // إنهاء الضغط
                 const endPress = (e) => {
                     e.preventDefault();
                     btn.classList.remove('pressed');
@@ -767,7 +906,7 @@
                 btn.addEventListener('mouseleave', endPress);
             });
             
-            // زر الإطلاق - الضغط المستمر
+            // زر الإطلاق
             const fireBtn = document.getElementById('fireBtn');
             
             const startFire = (e) => {
@@ -780,7 +919,6 @@
                         if (!gameOver && bulletsRemaining > 0) {
                             fireBullet();
                         } else if (bulletsRemaining <= 0) {
-                            // إيقاف الإطلاق عند نفاذ الطلقات
                             clearInterval(fireInterval);
                             fireInterval = null;
                         }
@@ -804,7 +942,6 @@
             fireBtn.addEventListener('mouseup', endFire);
             fireBtn.addEventListener('mouseleave', endFire);
             
-            // زر إعادة اللعبة
             restartBtn.addEventListener('click', restartGame);
             restartBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -829,7 +966,6 @@
             draw();
             requestAnimationFrame(gameLoop);
             
-            // ===== منع التمرير =====
             document.addEventListener('touchmove', (e) => {
                 if (e.target.closest('#gameContainer')) {
                     e.preventDefault();
