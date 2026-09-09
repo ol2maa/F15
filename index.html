@@ -362,15 +362,13 @@
             const W = 500, H = 700;
             const BIRD_SIZE = 40;
             const ENEMY_SIZE = 45;
-            const BULLET_SIZE = 14;
-            const BULLET_RADIUS = BULLET_SIZE / 2;
             const BULLET_SPEED = 12;
             const MAX_BULLETS = 30;
             const BULLETS_ADDED = 15;
             
-            // ===== حجم التصادم الفعلي للطائرات (أصغر من حجم المستطيل) =====
-            const COLLISION_RADIUS = 16; // نصف قطر التصادم للطائرة البيضاء
-            const ENEMY_COLLISION_RADIUS = 14; // نصف قطر التصادم للطائرة السوداء
+            // ===== حجم التصادم للطائرات =====
+            const COLLISION_RADIUS = 16;
+            const ENEMY_COLLISION_RADIUS = 14;
             
             let birdX = 200, birdY = 300;
             let direction = 0;
@@ -416,19 +414,121 @@
                 updateHUD();
             }
             
-            // ===== كشف التصادم بين طائرتين (دائري) =====
-            function checkPlaneCollision(birdPos, enemyPos) {
-                const birdCenterX = birdPos.x + BIRD_SIZE/2;
-                const birdCenterY = birdPos.y + BIRD_SIZE/2;
-                const enemyCenterX = enemyPos.x + ENEMY_SIZE/2;
-                const enemyCenterY = enemyPos.y + ENEMY_SIZE/2;
+            // ===== رسم صاروخ بيضاوي =====
+            function drawMissile(x, y, angle) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
                 
-                const dx = birdCenterX - enemyCenterX;
-                const dy = birdCenterY - enemyCenterY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                const length = 18;
+                const width = 8;
                 
-                // التصادم يحدث عندما تكون المسافة أقل من مجموع نصف القطرين
-                return distance < (COLLISION_RADIUS + ENEMY_COLLISION_RADIUS);
+                // ===== النار الخلفية (الجزء الأحمر) =====
+                // 25% من طول الصاروخ من الخلف
+                const fireLength = length * 0.25;
+                
+                // توهج النار (تأثير متوهج)
+                const gradient = ctx.createRadialGradient(
+                    -length/2 + fireLength/2, 0, 0,
+                    -length/2 + fireLength/2, 0, fireLength * 1.2
+                );
+                gradient.addColorStop(0, 'rgba(255, 200, 50, 0.8)');
+                gradient.addColorStop(0.4, 'rgba(255, 100, 0, 0.6)');
+                gradient.addColorStop(0.7, 'rgba(255, 50, 0, 0.3)');
+                gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                
+                ctx.beginPath();
+                ctx.ellipse(-length/2 + fireLength/2, 0, fireLength * 1.2, width * 1.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                // النار الداخلية (أكثر سطوعاً)
+                const gradient2 = ctx.createRadialGradient(
+                    -length/2 + fireLength/2, 0, 0,
+                    -length/2 + fireLength/2, 0, fireLength * 0.7
+                );
+                gradient2.addColorStop(0, 'rgba(255, 255, 200, 0.9)');
+                gradient2.addColorStop(0.5, 'rgba(255, 200, 50, 0.7)');
+                gradient2.addColorStop(1, 'rgba(255, 100, 0, 0)');
+                
+                ctx.beginPath();
+                ctx.ellipse(-length/2 + fireLength/2, 0, fireLength * 0.8, width * 1.0, 0, 0, Math.PI * 2);
+                ctx.fillStyle = gradient2;
+                ctx.fill();
+                
+                // ===== جسم الصاروخ (الجزء الأبيض) =====
+                ctx.shadowColor = 'rgba(255,255,255,0.2)';
+                ctx.shadowBlur = 5;
+                
+                // مستطيل بيضاوي (جسم الصاروخ)
+                ctx.beginPath();
+                ctx.ellipse(0, 0, length/2, width/2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                
+                // خط فاصل بين النار والجسم
+                ctx.beginPath();
+                ctx.moveTo(-length/2 + fireLength, -width/2 + 1);
+                ctx.lineTo(-length/2 + fireLength, width/2 - 1);
+                ctx.strokeStyle = 'rgba(200, 200, 220, 0.3)';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                
+                // ===== الجزء الأحمر في الخلف (25% من الصاروخ) =====
+                ctx.shadowBlur = 0;
+                
+                // مستطيل أحمر شفاف في الجزء الخلفي
+                ctx.beginPath();
+                ctx.ellipse(
+                    -length/2 + fireLength/2, 0,
+                    fireLength/2 - 1, width/2 - 1,
+                    0, 0, Math.PI * 2
+                );
+                ctx.fillStyle = 'rgba(255, 50, 0, 0.7)';
+                ctx.fill();
+                
+                // نار متحركة (خطوط حمراء)
+                for (let i = 0; i < 3; i++) {
+                    const offset = (i / 3) * fireLength - fireLength/2;
+                    const flicker = 0.8 + Math.random() * 0.4;
+                    ctx.beginPath();
+                    ctx.moveTo(-length/2 + fireLength/2 + offset, -width/2 * 0.3);
+                    ctx.lineTo(-length/2 + fireLength/2 + offset - 3 * flicker, 0);
+                    ctx.lineTo(-length/2 + fireLength/2 + offset, width/2 * 0.3);
+                    ctx.fillStyle = `rgba(255, ${150 + Math.random() * 50}, 0, ${0.5 + Math.random() * 0.3})`;
+                    ctx.fill();
+                }
+                
+                // ===== رأس الصاروخ (مدبب) =====
+                ctx.beginPath();
+                ctx.moveTo(length/2, 0);
+                ctx.lineTo(length/2 - 3, -width/2 + 1);
+                ctx.lineTo(length/2 - 3, width/2 - 1);
+                ctx.closePath();
+                ctx.fillStyle = '#e8e8f0';
+                ctx.fill();
+                ctx.strokeStyle = '#ccccdd';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                
+                // تفاصيل الصاروخ (خطوط جانبية)
+                ctx.strokeStyle = 'rgba(200, 200, 220, 0.3)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(-length/4, -width/2 + 1);
+                ctx.lineTo(length/4, -width/2 + 1);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(-length/4, width/2 - 1);
+                ctx.lineTo(length/4, width/2 - 1);
+                ctx.stroke();
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
             }
             
             // ===== طائرة بيضاء (اللاعب) =====
@@ -509,13 +609,6 @@
                 ctx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
                 ctx.lineWidth = 1;
                 ctx.stroke();
-                
-                // دائرة التصادم (مرئية للاختبار - يمكن إزالتها)
-                // ctx.beginPath();
-                // ctx.arc(0, 0, COLLISION_RADIUS, 0, Math.PI * 2);
-                // ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
-                // ctx.lineWidth = 1;
-                // ctx.stroke();
                 
                 ctx.shadowBlur = 0;
                 ctx.restore();
@@ -610,13 +703,6 @@
                 ctx.fillStyle = 'rgba(200, 0, 0, 0.6)';
                 ctx.fill();
                 
-                // دائرة التصادم (مرئية للاختبار - يمكن إزالتها)
-                // ctx.beginPath();
-                // ctx.arc(0, 0, ENEMY_COLLISION_RADIUS, 0, Math.PI * 2);
-                // ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
-                // ctx.lineWidth = 1;
-                // ctx.stroke();
-                
                 ctx.shadowBlur = 0;
                 ctx.restore();
             }
@@ -635,22 +721,8 @@
             
             function drawBullets() {
                 for (const b of bullets) {
-                    const gradient = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, BULLET_SIZE);
-                    gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
-                    gradient.addColorStop(0.5, 'rgba(255,255,255,0.4)');
-                    gradient.addColorStop(1, 'rgba(255,255,255,0)');
-                    ctx.beginPath();
-                    ctx.arc(b.x, b.y, BULLET_SIZE, 0, 2 * Math.PI);
-                    ctx.fillStyle = gradient;
-                    ctx.fill();
-                    
-                    ctx.beginPath();
-                    ctx.arc(b.x, b.y, BULLET_RADIUS, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fill();
-                    ctx.strokeStyle = 'rgba(200,200,255,0.3)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+                    const bulletAngle = Math.atan2(b.vy, b.vx);
+                    drawMissile(b.x, b.y, bulletAngle);
                 }
             }
             
@@ -669,12 +741,27 @@
             }
             
             function checkBulletCollision(bullet, enemy) {
+                // استخدام نصف قطر أكبر قليلاً للصاروخ
+                const bulletRadius = 8;
                 const closestX = Math.max(enemy.x, Math.min(bullet.x, enemy.x + ENEMY_SIZE));
                 const closestY = Math.max(enemy.y, Math.min(bullet.y, enemy.y + ENEMY_SIZE));
                 const dx = bullet.x - closestX;
                 const dy = bullet.y - closestY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                return distance < BULLET_RADIUS;
+                return distance < bulletRadius;
+            }
+            
+            function checkPlaneCollision(birdPos, enemyPos) {
+                const birdCenterX = birdPos.x + BIRD_SIZE/2;
+                const birdCenterY = birdPos.y + BIRD_SIZE/2;
+                const enemyCenterX = enemyPos.x + ENEMY_SIZE/2;
+                const enemyCenterY = enemyPos.y + ENEMY_SIZE/2;
+                
+                const dx = birdCenterX - enemyCenterX;
+                const dy = birdCenterY - enemyCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                return distance < (COLLISION_RADIUS + ENEMY_COLLISION_RADIUS);
             }
             
             function updateHUD() {
@@ -718,7 +805,6 @@
                 }
                 bullets = newBullets;
                 
-                // ===== كشف التصادم بين الطائرات =====
                 for (const e of enemies) {
                     if (!e.alive) continue;
                     e.x += e.vx;
@@ -733,7 +819,6 @@
                         e.y = Math.max(0, Math.min(H - ENEMY_SIZE, e.y));
                     }
                     
-                    // استخدام كشف التصادم الدائري بدلاً من المستطيل
                     if (checkPlaneCollision({x: birdX, y: birdY}, {x: e.x, y: e.y})) {
                         gameOver = true;
                         gameOverReason = '💥 Crash!';
