@@ -368,6 +368,10 @@
             const MAX_BULLETS = 30;
             const BULLETS_ADDED = 15;
             
+            // ===== حجم التصادم الفعلي للطائرات (أصغر من حجم المستطيل) =====
+            const COLLISION_RADIUS = 16; // نصف قطر التصادم للطائرة البيضاء
+            const ENEMY_COLLISION_RADIUS = 14; // نصف قطر التصادم للطائرة السوداء
+            
             let birdX = 200, birdY = 300;
             let direction = 0;
             let speed = 0;
@@ -412,7 +416,22 @@
                 updateHUD();
             }
             
-            // ===== طائرة بيضاء (اللاعب) - أجنحة مائلة للخلف =====
+            // ===== كشف التصادم بين طائرتين (دائري) =====
+            function checkPlaneCollision(birdPos, enemyPos) {
+                const birdCenterX = birdPos.x + BIRD_SIZE/2;
+                const birdCenterY = birdPos.y + BIRD_SIZE/2;
+                const enemyCenterX = enemyPos.x + ENEMY_SIZE/2;
+                const enemyCenterY = enemyPos.y + ENEMY_SIZE/2;
+                
+                const dx = birdCenterX - enemyCenterX;
+                const dy = birdCenterY - enemyCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // التصادم يحدث عندما تكون المسافة أقل من مجموع نصف القطرين
+                return distance < (COLLISION_RADIUS + ENEMY_COLLISION_RADIUS);
+            }
+            
+            // ===== طائرة بيضاء (اللاعب) =====
             function drawWhitePlane(x, y, angle) {
                 const cx = x + BIRD_SIZE/2;
                 const cy = y + BIRD_SIZE/2;
@@ -425,7 +444,6 @@
                 ctx.shadowColor = 'rgba(255,255,255,0.3)';
                 ctx.shadowBlur = 10;
                 
-                // جسم الطائرة
                 ctx.beginPath();
                 ctx.moveTo(size * 1.5, 0);
                 ctx.lineTo(0, -size * 0.4);
@@ -440,7 +458,6 @@
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
                 
-                // الأجنحة - مائلة للخلف (سويبت)
                 ctx.shadowBlur = 5;
                 
                 // الجناح الأيمن (مائل للخلف)
@@ -493,21 +510,18 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
                 
-                // تفاصيل الأجنحة
-                ctx.strokeStyle = 'rgba(200, 200, 220, 0.5)';
-                ctx.lineWidth = 0.5;
-                for (let i = -1; i <= 1; i+=2) {
-                    ctx.beginPath();
-                    ctx.moveTo(size * 0.1, i * size * 0.1);
-                    ctx.lineTo(-size * 0.2, i * size * 0.6);
-                    ctx.stroke();
-                }
+                // دائرة التصادم (مرئية للاختبار - يمكن إزالتها)
+                // ctx.beginPath();
+                // ctx.arc(0, 0, COLLISION_RADIUS, 0, Math.PI * 2);
+                // ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+                // ctx.lineWidth = 1;
+                // ctx.stroke();
                 
                 ctx.shadowBlur = 0;
                 ctx.restore();
             }
             
-            // ===== طائرة سوداء (العدو) - أجنحة مائلة للخلف =====
+            // ===== طائرة سوداء (العدو) =====
             function drawBlackPlane(x, y, angle) {
                 const cx = x + ENEMY_SIZE/2;
                 const cy = y + ENEMY_SIZE/2;
@@ -520,7 +534,6 @@
                 ctx.shadowColor = 'rgba(0,0,0,0.3)';
                 ctx.shadowBlur = 8;
                 
-                // جسم الطائرة
                 ctx.beginPath();
                 ctx.moveTo(size * 1.3, 0);
                 ctx.lineTo(0, -size * 0.35);
@@ -535,7 +548,6 @@
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
                 
-                // الأجنحة - مائلة للخلف
                 ctx.shadowBlur = 4;
                 
                 // الجناح الأيمن (مائل للخلف)
@@ -597,6 +609,13 @@
                 ctx.closePath();
                 ctx.fillStyle = 'rgba(200, 0, 0, 0.6)';
                 ctx.fill();
+                
+                // دائرة التصادم (مرئية للاختبار - يمكن إزالتها)
+                // ctx.beginPath();
+                // ctx.arc(0, 0, ENEMY_COLLISION_RADIUS, 0, Math.PI * 2);
+                // ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+                // ctx.lineWidth = 1;
+                // ctx.stroke();
                 
                 ctx.shadowBlur = 0;
                 ctx.restore();
@@ -699,6 +718,7 @@
                 }
                 bullets = newBullets;
                 
+                // ===== كشف التصادم بين الطائرات =====
                 for (const e of enemies) {
                     if (!e.alive) continue;
                     e.x += e.vx;
@@ -713,8 +733,8 @@
                         e.y = Math.max(0, Math.min(H - ENEMY_SIZE, e.y));
                     }
                     
-                    if (birdX + BIRD_SIZE > e.x && birdX < e.x + ENEMY_SIZE &&
-                        birdY + BIRD_SIZE > e.y && birdY < e.y + ENEMY_SIZE) {
+                    // استخدام كشف التصادم الدائري بدلاً من المستطيل
+                    if (checkPlaneCollision({x: birdX, y: birdY}, {x: e.x, y: e.y})) {
                         gameOver = true;
                         gameOverReason = '💥 Crash!';
                         showGameOver();
