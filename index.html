@@ -73,7 +73,9 @@
             transition: opacity 0.4s ease;
         }
 
-        /* ===================================================== */
+        /* =====================================================
+           HUD
+           ===================================================== */
 
         #hud {
             position: absolute;
@@ -121,9 +123,9 @@
             color: #90ee90;
         }
 
-        #hud .hud-item .icon {
-            margin-right: 3px;
-        }
+        /* =====================================================
+           Game Over
+           ===================================================== */
 
         #gameOverScreen {
             position: absolute;
@@ -212,6 +214,10 @@
             border: 1px solid rgba(255, 0, 0, 0.3);
         }
 
+        /* =====================================================
+           أزرار التحكم
+           ===================================================== */
+
         #controls {
             position: absolute;
             bottom: 30px;
@@ -288,6 +294,10 @@
             border-radius: 10px;
             font-size: 18px;
         }
+
+        /* =====================================================
+           شاشة الجوال
+           ===================================================== */
 
         @media (max-width: 520px) {
 
@@ -386,15 +396,32 @@
     <div id="introScreen">
 
         <!--
-            يجب أن تكون الصورة IMG_3475.png
-            في نفس مجلد index.html
+            اسم الصورة:
+            IMG_3475.png
+
+            يجب أن تكون الصورة في نفس مجلد index.html
         -->
 
-        <img src="IMG_3475.png" alt="Intro">
+        <img
+            src="IMG_3475.png"
+            alt="Intro"
+        >
 
     </div>
 
-    <canvas id="gameCanvas" width="500" height="700"></canvas>
+    <!-- =====================================================
+         اللعبة
+         ===================================================== -->
+
+    <canvas
+        id="gameCanvas"
+        width="500"
+        height="700">
+    </canvas>
+
+    <!-- =====================================================
+         HUD
+         ===================================================== -->
 
     <div id="hud">
 
@@ -402,19 +429,35 @@
             🏆 <span id="scoreDisplay">0</span>
         </div>
 
-        <div class="hud-item bullets" id="bulletsDisplay">
-            🔫 <span id="bulletsCount">30</span>/<span id="maxBullets">30</span>
+        <div
+            class="hud-item bullets"
+            id="bulletsDisplay">
+
+            🔫
+            <span id="bulletsCount">30</span>/
+            <span id="maxBullets">30</span>
+
         </div>
 
         <div class="hud-item speed">
-            ⚡ <span id="speedDisplay">0.0</span>
+
+            ⚡
+            <span id="speedDisplay">0.0</span>
+
         </div>
 
         <div class="hud-item wave">
-            🌊 <span id="waveDisplay">1</span>
+
+            🌊
+            <span id="waveDisplay">1</span>
+
         </div>
 
     </div>
+
+    <!-- =====================================================
+         Game Over
+         ===================================================== -->
 
     <div id="gameOverScreen">
 
@@ -422,43 +465,99 @@
             💥 GAME OVER
         </div>
 
-        <div class="reason" id="reasonText">
+        <div
+            class="reason"
+            id="reasonText">
+
             💀 No bullets left!
+
         </div>
 
         <div class="final-score">
-            🏆 Score: <span id="finalScore">0</span>
+
+            🏆 Score:
+            <span id="finalScore">0</span>
+
         </div>
 
         <div class="final-wave">
-            🌊 Wave: <span id="finalWave">1</span>
+
+            🌊 Wave:
+            <span id="finalWave">1</span>
+
         </div>
 
-        <button class="restart-btn" id="restartBtn">
+        <button
+            class="restart-btn"
+            id="restartBtn">
+
             🔄 إعادة اللعبة
+
         </button>
 
     </div>
+
+    <!-- =====================================================
+         أزرار التحكم
+         ===================================================== -->
 
     <div id="controls">
 
         <div class="ctrl-grid">
 
-            <button class="ctrl-btn" data-dir="up-left">↖</button>
-            <button class="ctrl-btn" data-dir="up">↑</button>
-            <button class="ctrl-btn" data-dir="up-right">↗</button>
+            <button
+                class="ctrl-btn"
+                data-dir="up-left">
+                ↖
+            </button>
 
-            <button class="ctrl-btn" data-dir="left">←</button>
+            <button
+                class="ctrl-btn"
+                data-dir="up">
+                ↑
+            </button>
 
-            <button class="ctrl-btn fire-btn" id="fireBtn">
+            <button
+                class="ctrl-btn"
+                data-dir="up-right">
+                ↗
+            </button>
+
+            <button
+                class="ctrl-btn"
+                data-dir="left">
+                ←
+            </button>
+
+            <button
+                class="ctrl-btn fire-btn"
+                id="fireBtn">
                 🔥
             </button>
 
-            <button class="ctrl-btn" data-dir="right">→</button>
+            <button
+                class="ctrl-btn"
+                data-dir="right">
+                →
+            </button>
 
-            <button class="ctrl-btn" data-dir="down-left">↙</button>
-            <button class="ctrl-btn" data-dir="down">↓</button>
-            <button class="ctrl-btn" data-dir="down-right">↘</button>
+            <button
+                class="ctrl-btn"
+                data-dir="down-left">
+                ↙
+            </button>
+
+            <button
+                class="ctrl-btn"
+                data-dir="down">
+                ↓
+            </button>
+
+            <button
+                class="ctrl-btn"
+                data-dir="down-right">
+                ↘
+            </button>
 
         </div>
 
@@ -470,15 +569,15 @@
 
 (function() {
 
+    /* =====================================================
+       العناصر
+       ===================================================== */
+
     const canvas =
         document.getElementById('gameCanvas');
 
     const ctx =
         canvas.getContext('2d');
-
-    /* =====================================================
-       شاشة البداية
-       ===================================================== */
 
     const introScreen =
         document.getElementById('introScreen');
@@ -517,6 +616,10 @@
 
     const restartBtn =
         document.getElementById('restartBtn');
+
+    /* =====================================================
+       إعدادات اللعبة
+       ===================================================== */
 
     const W = 500;
     const H = 700;
@@ -619,7 +722,8 @@
 
             bulletsRemaining =
                 Math.min(
-                    bulletsRemaining + BULLETS_ADDED,
+                    bulletsRemaining +
+                    BULLETS_ADDED,
                     MAX_BULLETS
                 );
         }
@@ -631,7 +735,11 @@
        رسم الصاروخ
        ===================================================== */
 
-    function drawMissile(x, y, angle) {
+    function drawMissile(
+        x,
+        y,
+        angle
+    ) {
 
         ctx.save();
 
@@ -644,12 +752,16 @@
         const fireLength =
             length * 0.25;
 
+        /* توهج النار */
+
         const gradient =
             ctx.createRadialGradient(
-                -length / 2 + fireLength / 2,
+                -length / 2 +
+                    fireLength / 2,
                 0,
                 0,
-                -length / 2 + fireLength / 2,
+                -length / 2 +
+                    fireLength / 2,
                 0,
                 fireLength * 1.2
             );
@@ -677,7 +789,8 @@
         ctx.beginPath();
 
         ctx.ellipse(
-            -length / 2 + fireLength / 2,
+            -length / 2 +
+                fireLength / 2,
             0,
             fireLength * 1.2,
             width * 1.5,
@@ -687,14 +800,19 @@
         );
 
         ctx.fillStyle = gradient;
+
         ctx.fill();
+
+        /* النار الداخلية */
 
         const gradient2 =
             ctx.createRadialGradient(
-                -length / 2 + fireLength / 2,
+                -length / 2 +
+                    fireLength / 2,
                 0,
                 0,
-                -length / 2 + fireLength / 2,
+                -length / 2 +
+                    fireLength / 2,
                 0,
                 fireLength * 0.7
             );
@@ -717,7 +835,8 @@
         ctx.beginPath();
 
         ctx.ellipse(
-            -length / 2 + fireLength / 2,
+            -length / 2 +
+                fireLength / 2,
             0,
             fireLength * 0.8,
             width * 1.0,
@@ -727,7 +846,10 @@
         );
 
         ctx.fillStyle = gradient2;
+
         ctx.fill();
+
+        /* جسم الصاروخ */
 
         ctx.shadowColor =
             'rgba(255,255,255,0.2)';
@@ -747,21 +869,28 @@
         );
 
         ctx.fillStyle = '#ffffff';
+
         ctx.fill();
 
         ctx.strokeStyle = '#ccccdd';
+
         ctx.lineWidth = 0.5;
+
         ctx.stroke();
+
+        /* خط الفصل */
 
         ctx.beginPath();
 
         ctx.moveTo(
-            -length / 2 + fireLength,
+            -length / 2 +
+                fireLength,
             -width / 2 + 1
         );
 
         ctx.lineTo(
-            -length / 2 + fireLength,
+            -length / 2 +
+                fireLength,
             width / 2 - 1
         );
 
@@ -769,14 +898,18 @@
             'rgba(200, 200, 220, 0.3)';
 
         ctx.lineWidth = 0.5;
+
         ctx.stroke();
+
+        /* الجزء الأحمر */
 
         ctx.shadowBlur = 0;
 
         ctx.beginPath();
 
         ctx.ellipse(
-            -length / 2 + fireLength / 2,
+            -length / 2 +
+                fireLength / 2,
             0,
             fireLength / 2 - 1,
             width / 2 - 1,
@@ -790,36 +923,40 @@
 
         ctx.fill();
 
+        /* النار المتحركة */
+
         for (let i = 0; i < 3; i++) {
 
             const offset =
-                (i / 3) * fireLength -
+                (i / 3) *
+                    fireLength -
                 fireLength / 2;
 
             const flicker =
-                0.8 + Math.random() * 0.4;
+                0.8 +
+                Math.random() * 0.4;
 
             ctx.beginPath();
 
             ctx.moveTo(
                 -length / 2 +
-                fireLength / 2 +
-                offset,
+                    fireLength / 2 +
+                    offset,
                 -width / 2 * 0.3
             );
 
             ctx.lineTo(
                 -length / 2 +
-                fireLength / 2 +
-                offset -
-                3 * flicker,
+                    fireLength / 2 +
+                    offset -
+                    3 * flicker,
                 0
             );
 
             ctx.lineTo(
                 -length / 2 +
-                fireLength / 2 +
-                offset,
+                    fireLength / 2 +
+                    offset,
                 width / 2 * 0.3
             );
 
@@ -828,6 +965,8 @@
 
             ctx.fill();
         }
+
+        /* رأس الصاروخ */
 
         ctx.beginPath();
 
@@ -849,11 +988,16 @@
         ctx.closePath();
 
         ctx.fillStyle = '#e8e8f0';
+
         ctx.fill();
 
         ctx.strokeStyle = '#ccccdd';
+
         ctx.lineWidth = 0.5;
+
         ctx.stroke();
+
+        /* التفاصيل */
 
         ctx.strokeStyle =
             'rgba(200, 200, 220, 0.3)';
@@ -897,7 +1041,11 @@
        طائرة اللاعب
        ===================================================== */
 
-    function drawWhitePlane(x, y, angle) {
+    function drawWhitePlane(
+        x,
+        y,
+        angle
+    ) {
 
         const cx =
             x + BIRD_SIZE / 2;
@@ -910,6 +1058,7 @@
         ctx.save();
 
         ctx.translate(cx, cy);
+
         ctx.rotate(angle);
 
         ctx.shadowColor =
@@ -919,7 +1068,10 @@
 
         ctx.beginPath();
 
-        ctx.moveTo(size * 1.5, 0);
+        ctx.moveTo(
+            size * 1.5,
+            0
+        );
 
         ctx.lineTo(
             0,
@@ -949,13 +1101,18 @@
         ctx.closePath();
 
         ctx.fillStyle = '#ffffff';
+
         ctx.fill();
 
         ctx.strokeStyle = '#ccccdd';
+
         ctx.lineWidth = 1.5;
+
         ctx.stroke();
 
         ctx.shadowBlur = 5;
+
+        /* الجناح الأيمن */
 
         ctx.beginPath();
 
@@ -982,11 +1139,16 @@
         ctx.closePath();
 
         ctx.fillStyle = '#f0f0ff';
+
         ctx.fill();
 
         ctx.strokeStyle = '#ccccdd';
+
         ctx.lineWidth = 1;
+
         ctx.stroke();
+
+        /* الجناح الأيسر */
 
         ctx.beginPath();
 
@@ -1013,11 +1175,16 @@
         ctx.closePath();
 
         ctx.fillStyle = '#f0f0ff';
+
         ctx.fill();
 
         ctx.strokeStyle = '#ccccdd';
+
         ctx.lineWidth = 1;
+
         ctx.stroke();
+
+        /* الذيل */
 
         ctx.beginPath();
 
@@ -1049,11 +1216,16 @@
         ctx.closePath();
 
         ctx.fillStyle = '#e8e8f0';
+
         ctx.fill();
 
         ctx.strokeStyle = '#ccccdd';
+
         ctx.lineWidth = 1;
+
         ctx.stroke();
+
+        /* قمرة القيادة */
 
         ctx.shadowBlur = 0;
 
@@ -1090,7 +1262,11 @@
        طائرة العدو
        ===================================================== */
 
-    function drawBlackPlane(x, y, angle) {
+    function drawBlackPlane(
+        x,
+        y,
+        angle
+    ) {
 
         const cx =
             x + ENEMY_SIZE / 2;
@@ -1103,6 +1279,7 @@
         ctx.save();
 
         ctx.translate(cx, cy);
+
         ctx.rotate(angle);
 
         ctx.shadowColor =
@@ -1112,7 +1289,10 @@
 
         ctx.beginPath();
 
-        ctx.moveTo(size * 1.3, 0);
+        ctx.moveTo(
+            size * 1.3,
+            0
+        );
 
         ctx.lineTo(
             0,
@@ -1142,13 +1322,18 @@
         ctx.closePath();
 
         ctx.fillStyle = '#1a1a2e';
+
         ctx.fill();
 
         ctx.strokeStyle = '#333344';
+
         ctx.lineWidth = 1.5;
+
         ctx.stroke();
 
         ctx.shadowBlur = 4;
+
+        /* الجناح الأيمن */
 
         ctx.beginPath();
 
@@ -1175,11 +1360,16 @@
         ctx.closePath();
 
         ctx.fillStyle = '#2a2a3e';
+
         ctx.fill();
 
         ctx.strokeStyle = '#333344';
+
         ctx.lineWidth = 1;
+
         ctx.stroke();
+
+        /* الجناح الأيسر */
 
         ctx.beginPath();
 
@@ -1206,11 +1396,16 @@
         ctx.closePath();
 
         ctx.fillStyle = '#2a2a3e';
+
         ctx.fill();
 
         ctx.strokeStyle = '#333344';
+
         ctx.lineWidth = 1;
+
         ctx.stroke();
+
+        /* الذيل */
 
         ctx.beginPath();
 
@@ -1242,11 +1437,16 @@
         ctx.closePath();
 
         ctx.fillStyle = '#222233';
+
         ctx.fill();
 
         ctx.strokeStyle = '#333344';
+
         ctx.lineWidth = 1;
+
         ctx.stroke();
+
+        /* قمرة القيادة */
 
         ctx.shadowBlur = 0;
 
@@ -1273,6 +1473,8 @@
         ctx.lineWidth = 1;
 
         ctx.stroke();
+
+        /* علامة حمراء على الذيل */
 
         ctx.beginPath();
 
@@ -1308,11 +1510,17 @@
         ctx.restore();
     }
 
+    /* =====================================================
+       رسم الأعداء
+       ===================================================== */
+
     function drawEnemies() {
 
         for (const e of enemies) {
 
-            if (!e.alive) continue;
+            if (!e.alive) {
+                continue;
+            }
 
             const enemyAngle =
                 Math.atan2(
@@ -1328,6 +1536,10 @@
         }
     }
 
+    /* =====================================================
+       رسم اللاعب
+       ===================================================== */
+
     function drawBird() {
 
         drawWhitePlane(
@@ -1336,6 +1548,10 @@
             direction
         );
     }
+
+    /* =====================================================
+       رسم الصواريخ
+       ===================================================== */
 
     function drawBullets() {
 
@@ -1396,7 +1612,9 @@
         );
 
         drawEnemies();
+
         drawBird();
+
         drawBullets();
     }
 
@@ -1416,7 +1634,8 @@
                 enemy.x,
                 Math.min(
                     bullet.x,
-                    enemy.x + ENEMY_SIZE
+                    enemy.x +
+                        ENEMY_SIZE
                 )
             );
 
@@ -1425,15 +1644,18 @@
                 enemy.y,
                 Math.min(
                     bullet.y,
-                    enemy.y + ENEMY_SIZE
+                    enemy.y +
+                        ENEMY_SIZE
                 )
             );
 
         const dx =
-            bullet.x - closestX;
+            bullet.x -
+            closestX;
 
         const dy =
-            bullet.y - closestY;
+            bullet.y -
+            closestY;
 
         const distance =
             Math.sqrt(
@@ -1441,7 +1663,8 @@
                 dy * dy
             );
 
-        return distance < bulletRadius;
+        return distance <
+            bulletRadius;
     }
 
     /* =====================================================
@@ -1491,7 +1714,7 @@
     }
 
     /* =====================================================
-       تحديث المعلومات
+       تحديث HUD
        ===================================================== */
 
     function updateHUD() {
@@ -1505,7 +1728,9 @@
         maxBulletsDisplay.textContent =
             MAX_BULLETS;
 
-        if (bulletsRemaining <= 5) {
+        if (
+            bulletsRemaining <= 5
+        ) {
 
             bulletsDisplay.classList.add(
                 'low'
@@ -1531,9 +1756,15 @@
 
     function update() {
 
-        if (!gameStarted || gameOver) {
+        if (
+            !gameStarted ||
+            gameOver
+        ) {
+
             return;
         }
+
+        /* حركة اللاعب */
 
         birdX +=
             speed *
@@ -1543,18 +1774,23 @@
             speed *
             Math.sin(direction);
 
+        /* الصواريخ */
+
         const newBullets = [];
 
         for (const b of bullets) {
 
             b.x += b.vx;
+
             b.y += b.vy;
 
             let hit = false;
 
             for (const e of enemies) {
 
-                if (!e.alive) continue;
+                if (!e.alive) {
+                    continue;
+                }
 
                 if (
                     checkBulletCollision(
@@ -1587,12 +1823,19 @@
 
         bullets = newBullets;
 
+        /* حركة الأعداء */
+
         for (const e of enemies) {
 
-            if (!e.alive) continue;
+            if (!e.alive) {
+                continue;
+            }
 
             e.x += e.vx;
+
             e.y += e.vy;
+
+            /* ارتداد أفقي */
 
             if (
                 e.x <= 0 ||
@@ -1611,6 +1854,8 @@
                     );
             }
 
+            /* ارتداد رأسي */
+
             if (
                 e.y <= 0 ||
                 e.y >= H - ENEMY_SIZE
@@ -1627,6 +1872,8 @@
                         )
                     );
             }
+
+            /* اصطدام اللاعب بالعدو */
 
             if (
                 checkPlaneCollision(
@@ -1652,6 +1899,8 @@
             }
         }
 
+        /* هل قتل جميع الأعداء؟ */
+
         const allDead =
             enemies.every(
                 e => !e.alive
@@ -1667,6 +1916,8 @@
 
             createEnemies();
         }
+
+        /* اصطدام حدود الشاشة */
 
         if (
             birdX <= 0 ||
@@ -1685,7 +1936,11 @@
             return;
         }
 
-        if (bulletsRemaining <= 0) {
+        /* انتهاء الصواريخ */
+
+        if (
+            bulletsRemaining <= 0
+        ) {
 
             gameOver = true;
 
@@ -1698,6 +1953,7 @@
         }
 
         updateHUD();
+
         draw();
     }
 
@@ -1740,9 +1996,11 @@
         );
 
         birdX = 200;
+
         birdY = 300;
 
         direction = 0;
+
         speed = 0;
 
         bullets = [];
@@ -1770,11 +2028,18 @@
 
     function fireBullet() {
 
-        if (!gameStarted || gameOver) {
+        if (
+            !gameStarted ||
+            gameOver
+        ) {
+
             return;
         }
 
-        if (bulletsRemaining <= 0) {
+        if (
+            bulletsRemaining <= 0
+        ) {
+
             return;
         }
 
@@ -1807,10 +2072,15 @@
             Math.sin(direction);
 
         bullets.push({
+
             x: noseX,
+
             y: noseY,
+
             vx: bvx,
+
             vy: bvy
+
         });
 
         bulletsRemaining--;
@@ -1826,7 +2096,11 @@
         newDirection
     ) {
 
-        if (!gameStarted || gameOver) {
+        if (
+            !gameStarted ||
+            gameOver
+        ) {
+
             return;
         }
 
@@ -1856,13 +2130,16 @@
 
             speed =
                 Math.min(
-                    speed + SPEED_STEP,
+                    speed +
+                        SPEED_STEP,
                     MAX_SPEED
                 );
 
         } else {
 
-            if (speed <= 0) {
+            if (
+                speed <= 0
+            ) {
 
                 speed =
                     BASE_SPEED;
@@ -1871,11 +2148,14 @@
 
                 speed =
                     Math.max(
-                        speed - SPEED_STEP,
+                        speed -
+                            SPEED_STEP,
                         0
                     );
 
-                if (speed === 0) {
+                if (
+                    speed === 0
+                ) {
 
                     speed =
                         BASE_SPEED;
@@ -1890,7 +2170,7 @@
     }
 
     /* =====================================================
-       إيقاف جميع المؤقتات
+       إيقاف المؤقتات
        ===================================================== */
 
     function clearAllIntervals() {
@@ -2063,6 +2343,7 @@
                 'mouseleave',
                 endPress
             );
+
         });
 
     /* =====================================================
@@ -2231,7 +2512,7 @@
     draw();
 
     /*
-     * تبدأ اللعبة بعد 3 ثوانٍ
+     * شاشة البداية لمدة 3 ثوانٍ
      */
 
     setTimeout(() => {
